@@ -1,3 +1,9 @@
+import Board from "@/components/Board";
+
 export default function HomePage() {
-  return <div>HomePage</div>;
+  return (
+    <main>
+      <Board />
+    </main>
+  );
 }
