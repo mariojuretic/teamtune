@@ -1,5 +1,7 @@
 import { Figtree } from "next/font/google";
 
+import Header from "@/components/Header";
+
 import "./globals.css";
 
 const figtree = Figtree({ subsets: ["latin"] });
@@ -16,7 +18,11 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={figtree.className}>{children}</body>
+      <body className={`${figtree.className} relative bg-slate-100`}>
+        <div className="absolute top-0 -z-50 h-96 w-full bg-gradient-to-br from-pink-400 to-blue-600 opacity-50 blur-3xl" />
+        <Header />
+        {children}
+      </body>
     </html>
   );
 }
