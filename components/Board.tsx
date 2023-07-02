@@ -1,23 +1,43 @@
 "use client";
 
 import { useCallback, useEffect } from "react";
-import { DragDropContext, Droppable } from "react-beautiful-dnd";
+import { DragDropContext, DropResult, Droppable } from "react-beautiful-dnd";
 
 import Column from "./Column";
 
 import { useBoardStore } from "@/store/BoardStore";
 
 export default function Board() {
-  const [board, initBoard] = useBoardStore((state) => [
+  const [board, initBoard, updateBoard] = useBoardStore((state) => [
     state.board,
     state.initBoard,
+    state.updateBoard,
   ]);
 
   useEffect(() => {
     initBoard();
   }, [initBoard]);
 
-  const onDragEndHandler = useCallback(() => {}, []);
+  const onDragEndHandler = useCallback(
+    (result: DropResult) => {
+      const { source, destination, type } = result;
+
+      // if item is dropped outside of droppable area
+      if (!destination) return;
+
+      // handle column drag
+      if (type === "COLUMN") {
+        const columns = Array.from(board.columns);
+
+        const [movedColumn] = columns.splice(source.index, 1);
+        columns.splice(destination.index, 0, movedColumn);
+
+        const updatedColumns = new Map(columns);
+        updateBoard({ ...board, columns: updatedColumns });
+      }
+    },
+    [board, updateBoard]
+  );
 
   return (
     <DragDropContext onDragEnd={onDragEndHandler}>
@@ -36,6 +56,8 @@ export default function Board() {
                 index={index}
               />
             ))}
+
+            {provided.placeholder}
           </div>
         )}
       </Droppable>

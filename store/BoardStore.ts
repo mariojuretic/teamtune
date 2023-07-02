@@ -5,6 +5,7 @@ import fetchBoard from "@/lib/fetchBoard";
 interface BoardState {
   board: Board;
   initBoard: () => void;
+  updateBoard: (board: Board) => void;
 }
 
 export const useBoardStore = create<BoardState>((set) => ({
@@ -15,4 +16,5 @@ export const useBoardStore = create<BoardState>((set) => ({
     const board = await fetchBoard();
     set({ board });
   },
+  updateBoard: (board) => set({ board }),
 }));
