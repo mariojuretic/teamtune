@@ -9,7 +9,11 @@ interface BoardState {
   updateBoard: (board: Board) => void;
   dbUpdateTask: (task: Task, status: ColumnType) => void;
   searchTerm: string;
-  setSearchTerm: (value: string) => void;
+  setSearchTerm: (term: string) => void;
+  newTaskTitle: string;
+  setNewTaskTitle: (title: string) => void;
+  newTaskStatus: ColumnType;
+  setNewTaskStatus: (status: ColumnType) => void;
 }
 
 export const useBoardStore = create<BoardState>((set) => ({
@@ -34,6 +38,11 @@ export const useBoardStore = create<BoardState>((set) => ({
   },
 
   searchTerm: "",
+  setSearchTerm: (term) => set({ searchTerm: term }),
 
-  setSearchTerm: (value) => set({ searchTerm: value }),
+  newTaskTitle: "",
+  setNewTaskTitle: (title) => set({ newTaskTitle: title }),
+
+  newTaskStatus: "todo",
+  setNewTaskStatus: (status) => set({ newTaskStatus: status }),
 }));

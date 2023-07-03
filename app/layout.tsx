@@ -1,6 +1,7 @@
 import { Figtree } from "next/font/google";
 
 import Header from "@/components/Header";
+import Modal from "@/components/Modal";
 
 import "./globals.css";
 
@@ -22,6 +23,7 @@ export default function RootLayout({
         <div className="absolute top-0 -z-50 h-96 w-full bg-gradient-to-br from-pink-400 to-blue-600 opacity-50 blur-3xl" />
         <Header />
         {children}
+        <Modal />
       </body>
     </html>
   );

@@ -3,6 +3,7 @@ import { PlusSmallIcon } from "@heroicons/react/24/outline";
 
 import TaskCard from "./TaskCard";
 import { useBoardStore } from "@/store/BoardStore";
+import { useModalStore } from "@/store/ModalStore";
 
 type Props = {
   id: ColumnType;
@@ -19,7 +20,16 @@ const parseColumnType: {
 };
 
 export default function Column({ id, tasks, index }: Props) {
-  const searchTerm = useBoardStore((state) => state.searchTerm);
+  const openModal = useModalStore((state) => state.openModal);
+  const [searchTerm, setNewTaskStatus] = useBoardStore((state) => [
+    state.searchTerm,
+    state.setNewTaskStatus,
+  ]);
+
+  const addTaskHandler = () => {
+    setNewTaskStatus(id);
+    openModal();
+  };
 
   return (
     <Draggable draggableId={id} index={index}>
@@ -70,7 +80,10 @@ export default function Column({ id, tasks, index }: Props) {
                 </div>
 
                 <div className="flex justify-end p-4">
-                  <button className="flex h-12 w-12 items-center justify-center rounded-md bg-green-500 shadow-sm hover:bg-green-600">
+                  <button
+                    className="flex h-12 w-12 items-center justify-center rounded-md bg-green-500 shadow-sm hover:bg-green-600"
+                    onClick={addTaskHandler}
+                  >
                     <PlusSmallIcon className="h-8 w-8 text-white" />
                   </button>
                 </div>
