@@ -2,14 +2,15 @@ import { create } from "zustand";
 import { ID } from "appwrite";
 
 import fetchBoard from "@/lib/fetchBoard";
-import { databases } from "@/lib/appwrite";
+import uploadImage from "@/lib/uploadImage";
+import { databases, storage } from "@/lib/appwrite";
 
 interface BoardState {
   board: Board;
   initBoard: () => void;
   updateBoard: (board: Board) => void;
   updateTask: (task: Task, status: ColumnType) => void;
-  addTask: (title: string, status: ColumnType) => void;
+  addTask: (title: string, status: ColumnType, imageFile?: File | null) => void;
   deleteTask: (index: number, task: Task, status: ColumnType) => void;
   searchTerm: string;
   setSearchTerm: (term: string) => void;
@@ -17,6 +18,8 @@ interface BoardState {
   setNewTaskTitle: (title: string) => void;
   newTaskStatus: ColumnType;
   setNewTaskStatus: (status: ColumnType) => void;
+  newTaskImageFile: File | null;
+  setNewTaskImageFile: (imageFile: File | null) => void;
 }
 
 export const useBoardStore = create<BoardState>((set, get) => ({
@@ -40,12 +43,26 @@ export const useBoardStore = create<BoardState>((set, get) => ({
     );
   },
 
-  addTask: async (title, status) => {
+  addTask: async (title, status, imageFile) => {
+    let image: Image | undefined;
+
+    if (imageFile) {
+      const uploadedFile = await uploadImage(imageFile);
+
+      if (uploadedFile) {
+        image = { bucketId: uploadedFile.bucketId, fileId: uploadedFile.$id };
+      }
+    }
+
     const { $id } = await databases.createDocument(
       process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID!,
       process.env.NEXT_PUBLIC_APPWRITE_COLLECTION_ID!,
       ID.unique(),
-      { title, status }
+      {
+        title,
+        status,
+        ...(image && { image: JSON.stringify(image) }),
+      }
     );
 
     set({ newTaskTitle: "" });
@@ -53,7 +70,13 @@ export const useBoardStore = create<BoardState>((set, get) => ({
     set((state) => {
       const updatedColumns = new Map(state.board.columns);
 
-      const newTask: Task = { $id, title, status };
+      const newTask: Task = {
+        $id,
+        title,
+        status,
+        ...(image && { image }),
+      };
+
       const targetColumn = updatedColumns.get(status);
 
       if (!targetColumn) {
@@ -75,6 +98,10 @@ export const useBoardStore = create<BoardState>((set, get) => ({
     updatedColumns.get(status)?.tasks.splice(index, 1);
     set({ board: { columns: updatedColumns } });
 
+    if (task.image) {
+      await storage.deleteFile(task.image.bucketId, task.image.fileId);
+    }
+
     await databases.deleteDocument(
       process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID!,
       process.env.NEXT_PUBLIC_APPWRITE_COLLECTION_ID!,
@@ -90,4 +117,7 @@ export const useBoardStore = create<BoardState>((set, get) => ({
 
   newTaskStatus: "todo",
   setNewTaskStatus: (status) => set({ newTaskStatus: status }),
+
+  newTaskImageFile: null,
+  setNewTaskImageFile: (imageFile) => set({ newTaskImageFile: imageFile }),
 }));

@@ -1,33 +1,46 @@
 "use client";
 
-import { Fragment } from "react";
+import Image from "next/image";
+import { Fragment, useRef } from "react";
 import { Dialog, Transition } from "@headlessui/react";
+import { CameraIcon } from "@heroicons/react/24/outline";
 
 import TaskStatusRadioGroup from "./TaskStatusRadioGroup";
 import { useBoardStore } from "@/store/BoardStore";
 import { useModalStore } from "@/store/ModalStore";
 
 export default function Modal() {
+  const imagePickerRef = useRef<HTMLInputElement>(null);
+
   const [isOpen, closeModal] = useModalStore((state) => [
     state.isOpen,
     state.closeModal,
   ]);
 
-  const [newTaskTitle, setNewTaskTitle, newTaskStatus, addTask] = useBoardStore(
-    (state) => [
-      state.newTaskTitle,
-      state.setNewTaskTitle,
-      state.newTaskStatus,
-      state.addTask,
-    ]
-  );
+  const [
+    newTaskTitle,
+    setNewTaskTitle,
+    newTaskStatus,
+    newTaskImageFile,
+    setNewTaskImageFile,
+    addTask,
+  ] = useBoardStore((state) => [
+    state.newTaskTitle,
+    state.setNewTaskTitle,
+    state.newTaskStatus,
+    state.newTaskImageFile,
+    state.setNewTaskImageFile,
+    state.addTask,
+  ]);
 
   const submitHandler = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     if (!newTaskTitle) return;
 
-    addTask(newTaskTitle, newTaskStatus);
+    addTask(newTaskTitle, newTaskStatus, newTaskImageFile);
+
+    setNewTaskImageFile(null);
     closeModal();
   };
 
@@ -75,6 +88,37 @@ export default function Modal() {
                 />
 
                 <TaskStatusRadioGroup />
+
+                <button
+                  type="button"
+                  className="flex items-center justify-center space-x-2 rounded-md border border-slate-300 p-4 text-sm text-slate-500 outline-none focus:ring-1 focus:ring-blue-500 focus:ring-offset-1"
+                  onClick={() => imagePickerRef.current?.click()}
+                >
+                  <CameraIcon className="h-5 w-5" />
+                  <span>Upload Image</span>
+                </button>
+
+                <input
+                  type="file"
+                  hidden
+                  ref={imagePickerRef}
+                  onChange={(e) => {
+                    if (!e.target.files![0].type.startsWith("image/")) return;
+                    setNewTaskImageFile(e.target.files![0]);
+                  }}
+                />
+
+                {newTaskImageFile && (
+                  <div className="relative h-40 w-full cursor-not-allowed overflow-hidden rounded-md hover:grayscale">
+                    <Image
+                      src={URL.createObjectURL(newTaskImageFile)}
+                      alt="Uploaded task image"
+                      fill
+                      className="object-cover object-center"
+                      onClick={() => setNewTaskImageFile(null)}
+                    />
+                  </div>
+                )}
 
                 <button
                   type="submit"

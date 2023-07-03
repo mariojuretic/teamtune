@@ -20,6 +20,7 @@ export default async function fetchBoard() {
       $id: task.$id,
       title: task.title,
       status: task.status,
+      ...(task.image && { image: JSON.parse(task.image) }),
     });
 
     return acc;
