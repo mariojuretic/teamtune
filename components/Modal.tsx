@@ -13,10 +13,23 @@ export default function Modal() {
     state.closeModal,
   ]);
 
-  const [newTaskTitle, setNewTaskTitle] = useBoardStore((state) => [
-    state.newTaskTitle,
-    state.setNewTaskTitle,
-  ]);
+  const [newTaskTitle, setNewTaskTitle, newTaskStatus, addTask] = useBoardStore(
+    (state) => [
+      state.newTaskTitle,
+      state.setNewTaskTitle,
+      state.newTaskStatus,
+      state.addTask,
+    ]
+  );
+
+  const submitHandler = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    if (!newTaskTitle) return;
+
+    addTask(newTaskTitle, newTaskStatus);
+    closeModal();
+  };
 
   return (
     <Transition show={isOpen} as={Fragment} appear>
@@ -47,6 +60,7 @@ export default function Modal() {
               <Dialog.Panel
                 as="form"
                 className="flex w-full max-w-md flex-col space-y-4 rounded-md bg-white p-4 shadow-sm"
+                onSubmit={submitHandler}
               >
                 <Dialog.Title className="text-center text-lg font-bold">
                   Add a Task
