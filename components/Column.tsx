@@ -1,7 +1,8 @@
 import { Draggable, Droppable } from "react-beautiful-dnd";
+import { PlusSmallIcon } from "@heroicons/react/24/outline";
 
 import TaskCard from "./TaskCard";
-import { PlusSmallIcon } from "@heroicons/react/24/outline";
+import { useBoardStore } from "@/store/BoardStore";
 
 type Props = {
   id: ColumnType;
@@ -18,6 +19,8 @@ const parseColumnType: {
 };
 
 export default function Column({ id, tasks, index }: Props) {
+  const searchTerm = useBoardStore((state) => state.searchTerm);
+
   return (
     <Draggable draggableId={id} index={index}>
       {(provided) => (
@@ -38,14 +41,30 @@ export default function Column({ id, tasks, index }: Props) {
                 <h2 className="flex items-center justify-between p-4 text-xl font-bold">
                   <span>{parseColumnType[id]}</span>
                   <span className="min-w-[1.75rem] rounded-md bg-white/50 px-2 py-1 text-center text-sm font-normal text-slate-500 shadow-sm">
-                    {tasks.length}
+                    {!searchTerm
+                      ? tasks.length
+                      : tasks.filter((task) =>
+                          task.title
+                            .toLowerCase()
+                            .includes(searchTerm.toLowerCase())
+                        ).length}
                   </span>
                 </h2>
 
                 <div className="space-y-2 px-2">
-                  {tasks.map((task, index) => (
-                    <TaskCard key={task.$id} task={task} index={index} />
-                  ))}
+                  {tasks.map((task, index) => {
+                    if (
+                      searchTerm &&
+                      !task.title
+                        .toLowerCase()
+                        .includes(searchTerm.toLowerCase())
+                    )
+                      return null;
+
+                    return (
+                      <TaskCard key={task.$id} task={task} index={index} />
+                    );
+                  })}
 
                   {provided.placeholder}
                 </div>

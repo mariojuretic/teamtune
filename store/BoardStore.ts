@@ -8,6 +8,8 @@ interface BoardState {
   initBoard: () => void;
   updateBoard: (board: Board) => void;
   dbUpdateTask: (task: Task, status: ColumnType) => void;
+  searchTerm: string;
+  setSearchTerm: (value: string) => void;
 }
 
 export const useBoardStore = create<BoardState>((set) => ({
@@ -30,4 +32,8 @@ export const useBoardStore = create<BoardState>((set) => ({
       { status }
     );
   },
+
+  searchTerm: "",
+
+  setSearchTerm: (value) => set({ searchTerm: value }),
 }));

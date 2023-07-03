@@ -1,9 +1,18 @@
+"use client";
+
 import Image from "next/image";
 import { MagnifyingGlassIcon } from "@heroicons/react/24/outline";
+
+import { useBoardStore } from "@/store/BoardStore";
 
 import logo from "@/assets/logo.png";
 
 export default function Header() {
+  const [searchTerm, setSearchTerm] = useBoardStore((state) => [
+    state.searchTerm,
+    state.setSearchTerm,
+  ]);
+
   return (
     <header className="grid grid-cols-3 items-center gap-x-8 bg-slate-500/10 px-8 py-4">
       <div>
@@ -23,6 +32,8 @@ export default function Header() {
           type="text"
           placeholder="Search tasks..."
           className="flex-1 bg-transparent text-sm outline-none"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
         />
         <button type="submit" hidden>
           Search
