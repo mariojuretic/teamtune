@@ -1,12 +1,16 @@
 import { Draggable } from "react-beautiful-dnd";
 import { XMarkIcon } from "@heroicons/react/24/outline";
 
+import { useBoardStore } from "@/store/BoardStore";
+
 type Props = {
   task: Task;
   index: number;
 };
 
 export default function TaskCard({ task, index }: Props) {
+  const deleteTask = useBoardStore((state) => state.deleteTask);
+
   return (
     <Draggable draggableId={task.$id} index={index}>
       {(provided) => (
@@ -18,7 +22,10 @@ export default function TaskCard({ task, index }: Props) {
         >
           <div className="flex items-start justify-between space-x-4 p-4">
             <h4>{task.title}</h4>
-            <button className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-red-500 shadow-sm hover:bg-red-600">
+            <button
+              className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-red-500 shadow-sm hover:bg-red-600"
+              onClick={() => deleteTask(index, task, task.status)}
+            >
               <XMarkIcon className="h-4 w-4 text-white" />
             </button>
           </div>

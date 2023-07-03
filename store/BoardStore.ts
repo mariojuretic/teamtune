@@ -8,8 +8,9 @@ interface BoardState {
   board: Board;
   initBoard: () => void;
   updateBoard: (board: Board) => void;
-  dbUpdateTask: (task: Task, status: ColumnType) => void;
+  updateTask: (task: Task, status: ColumnType) => void;
   addTask: (title: string, status: ColumnType) => void;
+  deleteTask: (index: number, task: Task, status: ColumnType) => void;
   searchTerm: string;
   setSearchTerm: (term: string) => void;
   newTaskTitle: string;
@@ -18,7 +19,7 @@ interface BoardState {
   setNewTaskStatus: (status: ColumnType) => void;
 }
 
-export const useBoardStore = create<BoardState>((set) => ({
+export const useBoardStore = create<BoardState>((set, get) => ({
   board: {
     columns: new Map<ColumnType, Column>(),
   },
@@ -30,7 +31,7 @@ export const useBoardStore = create<BoardState>((set) => ({
 
   updateBoard: (board) => set({ board }),
 
-  dbUpdateTask: async (task, status) => {
+  updateTask: async (task, status) => {
     await databases.updateDocument(
       process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID!,
       process.env.NEXT_PUBLIC_APPWRITE_COLLECTION_ID!,
@@ -67,6 +68,18 @@ export const useBoardStore = create<BoardState>((set) => ({
         },
       };
     });
+  },
+
+  deleteTask: async (index, task, status) => {
+    const updatedColumns = new Map(get().board.columns);
+    updatedColumns.get(status)?.tasks.splice(index, 1);
+    set({ board: { columns: updatedColumns } });
+
+    await databases.deleteDocument(
+      process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID!,
+      process.env.NEXT_PUBLIC_APPWRITE_COLLECTION_ID!,
+      task.$id
+    );
   },
 
   searchTerm: "",

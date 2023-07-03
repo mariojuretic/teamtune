@@ -8,14 +8,12 @@ import Column from "./Column";
 import { useBoardStore } from "@/store/BoardStore";
 
 export default function Board() {
-  const [board, initBoard, updateBoard, dbUpdateTask] = useBoardStore(
-    (state) => [
-      state.board,
-      state.initBoard,
-      state.updateBoard,
-      state.dbUpdateTask,
-    ]
-  );
+  const [board, initBoard, updateBoard, updateTask] = useBoardStore((state) => [
+    state.board,
+    state.initBoard,
+    state.updateBoard,
+    state.updateTask,
+  ]);
 
   useEffect(() => {
     initBoard();
@@ -87,11 +85,11 @@ export default function Board() {
           );
 
           updateBoard({ ...board, columns: updatedColumns });
-          dbUpdateTask(movedTask, updatedDestinationColumn.id);
+          updateTask(movedTask, updatedDestinationColumn.id);
         }
       }
     },
-    [board, updateBoard, dbUpdateTask]
+    [board, updateBoard, updateTask]
   );
 
   return (
