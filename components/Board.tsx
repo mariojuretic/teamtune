@@ -35,6 +35,56 @@ export default function Board() {
         const updatedColumns = new Map(columns);
         updateBoard({ ...board, columns: updatedColumns });
       }
+
+      // handle task drag
+      if (type === "TASK") {
+        const columns = Array.from(board.columns);
+
+        const sourceColumn = columns.find(
+          (column) => column[0] === source.droppableId
+        );
+        const destinationColumn = columns.find(
+          (column) => column[0] === destination.droppableId
+        );
+
+        if (!sourceColumn || !destinationColumn) return;
+
+        if (
+          sourceColumn === destinationColumn &&
+          source.index === destination.index
+        )
+          return;
+
+        const updatedSourceColumn: Column = {
+          id: sourceColumn[1].id,
+          tasks: [...sourceColumn[1].tasks],
+        };
+        const [movedTask] = updatedSourceColumn.tasks.splice(source.index, 1);
+
+        const updatedColumns = new Map(columns);
+
+        if (sourceColumn === destinationColumn) {
+          updatedSourceColumn.tasks.splice(destination.index, 0, movedTask);
+        } else {
+          const updatedDestinationColumn: Column = {
+            id: destinationColumn[1].id,
+            tasks: [...destinationColumn[1].tasks],
+          };
+          updatedDestinationColumn.tasks.splice(
+            destination.index,
+            0,
+            movedTask
+          );
+          updatedColumns.set(
+            updatedDestinationColumn.id,
+            updatedDestinationColumn
+          );
+        }
+
+        updatedColumns.set(updatedSourceColumn.id, updatedSourceColumn);
+
+        updateBoard({ ...board, columns: updatedColumns });
+      }
     },
     [board, updateBoard]
   );
