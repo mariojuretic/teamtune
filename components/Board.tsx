@@ -8,11 +8,14 @@ import Column from "./Column";
 import { useBoardStore } from "@/store/BoardStore";
 
 export default function Board() {
-  const [board, initBoard, updateBoard] = useBoardStore((state) => [
-    state.board,
-    state.initBoard,
-    state.updateBoard,
-  ]);
+  const [board, initBoard, updateBoard, dbUpdateTask] = useBoardStore(
+    (state) => [
+      state.board,
+      state.initBoard,
+      state.updateBoard,
+      state.dbUpdateTask,
+    ]
+  );
 
   useEffect(() => {
     initBoard();
@@ -22,10 +25,8 @@ export default function Board() {
     (result: DropResult) => {
       const { source, destination, type } = result;
 
-      // if item is dropped outside of droppable area
       if (!destination) return;
 
-      // handle column drag
       if (type === "COLUMN") {
         const columns = Array.from(board.columns);
 
@@ -36,7 +37,6 @@ export default function Board() {
         updateBoard({ ...board, columns: updatedColumns });
       }
 
-      // handle task drag
       if (type === "TASK") {
         const columns = Array.from(board.columns);
 
@@ -61,10 +61,13 @@ export default function Board() {
         };
         const [movedTask] = updatedSourceColumn.tasks.splice(source.index, 1);
 
-        const updatedColumns = new Map(columns);
-
         if (sourceColumn === destinationColumn) {
           updatedSourceColumn.tasks.splice(destination.index, 0, movedTask);
+
+          const updatedColumns = new Map(columns);
+          updatedColumns.set(updatedSourceColumn.id, updatedSourceColumn);
+
+          updateBoard({ ...board, columns: updatedColumns });
         } else {
           const updatedDestinationColumn: Column = {
             id: destinationColumn[1].id,
@@ -75,18 +78,20 @@ export default function Board() {
             0,
             movedTask
           );
+
+          const updatedColumns = new Map(columns);
+          updatedColumns.set(updatedSourceColumn.id, updatedSourceColumn);
           updatedColumns.set(
             updatedDestinationColumn.id,
             updatedDestinationColumn
           );
+
+          updateBoard({ ...board, columns: updatedColumns });
+          dbUpdateTask(movedTask, updatedDestinationColumn.id);
         }
-
-        updatedColumns.set(updatedSourceColumn.id, updatedSourceColumn);
-
-        updateBoard({ ...board, columns: updatedColumns });
       }
     },
-    [board, updateBoard]
+    [board, updateBoard, dbUpdateTask]
   );
 
   return (
